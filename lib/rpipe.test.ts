@@ -2,7 +2,7 @@
 import { connect } from "./redisClient";
 import { RedisClientType } from 'redis';
 import { describe, expect, it, beforeAll } from '@jest/globals';
-import { Aggregator } from './aggregator';
+import { RPipe } from './RPipe';
 import {Message} from "./types";
 
 
@@ -13,11 +13,11 @@ const options = {
 
 describe('Aggregator', () => {
     let redisClient: RedisClientType;
-    let aggregator: Aggregator;
+    let aggregator: RPipe;
 
     beforeAll(async () => {
         redisClient = await connect(options);
-        aggregator = new Aggregator('testAggregator', redisClient, {
+        aggregator = new RPipe('testAggregator', redisClient, {
             states: ['processing', 'done', 'failed'],
             postFix: 'testAggregator'
         });
@@ -33,7 +33,7 @@ describe('Aggregator', () => {
         ];
         await aggregator.registerMessages(messages);
         // Verify the message was added to the correct set
-        const members = await redisClient.sMembers('aggregator:group:testAggregator:id:123:state:collector:testAggregator');
+        const members = await redisClient.sMembers('rpipe:group:testAggregator:id:123:state:collector:testAggregator');
         expect(members).toContain(JSON.stringify({type:"testAction"}));
     });
 
@@ -44,7 +44,7 @@ describe('Aggregator', () => {
 
     it('should correctly generate a Redis key', () => {
         const key = aggregator.getKey('123', 'processing');
-        expect(key).toBe('aggregator:group:testAggregator:id:123:state:processing:testAggregator');
+        expect(key).toBe('rpipe:group:testAggregator:id:123:state:processing:testAggregator');
     });
 
     it('should throw an error when generating a key with an invalid state', () => {
@@ -52,7 +52,7 @@ describe('Aggregator', () => {
     });
 
     it('should parse a Redis key into its constituent parts', () => {
-        const parsedKey = aggregator.parseKey('aggregator:group:testAggregator:id:123:state:processing:testAggregator');
+        const parsedKey = aggregator.parseKey('rpipe:group:testAggregator:id:123:state:processing:testAggregator');
         expect(parsedKey).toEqual({ id: '123', state: 'processing' });
     });
 

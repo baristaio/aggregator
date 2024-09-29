@@ -3,12 +3,12 @@ import {RedisClientType} from "redis";
 import {validateMessage} from "./messageValidator";
 const defaultCollectorName = 'collector';
 const defaultStates = ['processing', 'done', 'failed'];
-
+const DEFAULT_PARTS_NO = 8;
 /**
  * The `Aggregator` class provides functionality for managing and manipulating data within a Redis database.
  * It supports operations such as collecting, moving, and merging data based on state transitions.
  */
-export class Aggregator {
+export class RPipe {
   private _name: string; // The aggregation group name
   private _client: RedisClientType; // Redis client instance
   private _prefix: string; // Prefix for Redis keys
@@ -22,7 +22,7 @@ export class Aggregator {
    * Constructs an `Aggregator` instance.
    * @param {string} name - The name of the aggregation group.
    * @param {RedisClientType} redisClient - An instance of a Redis client.
-   * @param {AggregatorOptions} options - Configuration options for the aggregator.
+   * @param {AggregatorOptions} options - Configuration options for the rpipe.
    */
   constructor(name: string, redisClient: RedisClientType, options: AggregatorOptions) {
     this._client = redisClient;
@@ -32,11 +32,11 @@ export class Aggregator {
     this._collectorName = options?.collectorName || defaultCollectorName;
     this._states =  [defaultCollectorName, ...(options?.states ?? defaultStates)];
     this._separator = ':';
-    this._partsNo = 8;
+    this._partsNo = DEFAULT_PARTS_NO;
   }
 
   /**
-   * Generates a Redis key using the aggregator's configuration and specific state and identifier.
+   * Generates a Redis key using the rpipe's configuration and specific state and identifier.
    * @param {string} key - The identifier for the data.
    * @param {string} state - The state of the data.
    * @returns {string} The generated Redis key.

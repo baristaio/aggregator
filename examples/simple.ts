@@ -1,11 +1,11 @@
 import {connect } from '../lib/redisClient';
 const config = require('./config');
-import {type Action, Message, Receiver} from '@baristaio/aggregator/lib/types';
-import { Aggregator }  from '../lib/aggregator';
+import {type Action, Message, Receiver} from '@baristaio/rpipe/lib/types';
+import { RPipe }  from '../lib/RPipe';
 const modules: string[] = ['test1', 'test2', 'test3'];
 
 const createAggregator = (name:string, client: any) => {
-    return new Aggregator(name, client, {
+    return new RPipe(name, client, {
         prefix: 'aggregator',
         postFix: name
     });
@@ -24,14 +24,14 @@ const messageGenerator = (name: string, id: number,  action: Action):Message => 
 
 // connect(config.redis).then((client:any) =>  {
 //     console.log('client connected');
-//     const aggregator = createAggregator('test', client);
-//     console.log('aggregator created');
+//     const rpipe = createAggregator('test', client);
+//     console.log('rpipe created');
 //     const message: Message = messageGenerator('test', 2, {type: 'test', payload: {data: 'test'}});
-//     aggregator.registerMessages([message]);
+//     rpipe.registerMessages([message]);
 //     console.log('messages registered');
-//     await aggregator.move('collector', 'processing');
-//     await aggregator.move('processing', 'done');
-//     await aggregator.move('done', 'failed');
+//     await rpipe.move('collector', 'processing');
+//     await rpipe.move('processing', 'done');
+//     await rpipe.move('done', 'failed');
 //     console.log('message moved');
 // });
 
@@ -46,7 +46,7 @@ async function main() {
     await aggregator.moveId('2', 'done', 'failed');
 
     const messages: Message[] = [];
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 1000000; i++) {
         messages.push(messageGenerator('test', 3, {type: `test-${i}`, payload: {count: i + 10000000}}));
     }
 
